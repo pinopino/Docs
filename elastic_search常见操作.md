@@ -1,10 +1,10 @@
-ElasticSearch��һЩ��������
+﻿ElasticSearch的一些常见操作
 =========
 
-һ���򵥵�select *��
+一个简单的select *：
 GET /megacorp/employee/_search
-�ֱ�ָ�������������ͣ��Լ�select�ķ�ʽΪ*
+分别指定了索引，类型，以及select的方式为*
 
-��Ⱥ�ļ��ͳ����Ϣ������Ҫ��һ��ָ�����`��Ⱥ����`��
+集群的监控统计信息中最重要的一个指标就是`集群健康`：
 GET /_cluster/health
-status������ֵ��green��yellow�Լ�red
+status有三个值：green、yellow以及red

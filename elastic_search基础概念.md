@@ -53,7 +53,7 @@ ElasticSearch的一些基础概念
     ES中的两个概念映射（mapping）和分析（analysis）就是用来解决上述两个问题的。<br/><br/>
 
 - 通过mapping我们将json字段匹配到lucene中一种确定的数据类型，lucene支持的常见数据类型有：`string`、`byte`、`short`、`integer`、`long`、`float`、`double`、`boolean`、`date`；
-  会遇到自定义字段mapping的情况不多，因为基本的数据类型已经能够应付大多数的情况；偶尔需要自定义的一般来说是json中的string字段，比如一个简单的例子，可能一个英文方式表达的日期`Feb,12,2016`，这个时候如果你也想将该string看作是日期类型的话，自定义mapping是免不了的了<br/><br/>
+  会遇到自定义字段mapping的情况不多，因为基本的数据类型已经能够应付大多数的情况；偶尔需要自定义的一般来说是json中的string字段，比如一个简单的例子，可能一个英文方式表达的日期`Feb,12,2016`，这个时候如果你也想将该string看作是日期类型的话，自定义mapping就可以派上用场了<br/><br/>
 
 - 前面有提到ES会在插入第一条数据的时候自动为我们创建索引和类型；这个动作也可以我们自己手动来完成，这个时候创建索引你可能会感兴趣一些参数、属性设置：
     ```csharp
@@ -62,10 +62,31 @@ ElasticSearch的一些基础概念
         "settings": {
             "number_of_shards": 3,
             "number_of_replicas": 1
-        }
-        "mapping": { ... }
+        },
+        "mappings": {
+            "tweet": {
+                "properties": {
+                    "tweet": {
+                        "type": "string",
+                        "analyzer": "english"
+                    },
+                    "date": {
+                        "type": "date"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "user_id": {
+                        "type": "long"
+                    }
+                }
+            }
+	    }
     }
     ```
+    这里同样也展示了一下自定义mapping的设置，手动设置mapping的时候，针对string类型主要有两个参数需要注意：
+    1. `index`，可选值analyzed、not_analyzed、no
+    2. `analyer`，用来给该字段进行分词的<br/><br/>
 - sdf
   
 参考链接：
