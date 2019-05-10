@@ -60,5 +60,53 @@ ES的各种配置分别放置在三个文件中：
     - 打开bootstrap.memory_lock选项（在elasticsearch.yml中）。意图很简单，就是为了防止JVM分配好的内存被操作系统换出到磁盘，影响ES的效率
 
 ### web管理
+目前使用的是`elasticsearch-head`web管理端。虽然很丑，但是功能还算完备，[项目维护](https://github.com/mobz/elasticsearch-head)也还行。
+- 单一节点集群没有试过head能不能正常跑，但既然是用上head了多半也就是跟集群打交道了。所以节点的配置应该也是按照集群的要求来的，也因此elasticsearch.yml中network.host之类的选项记得打开
+
+- 在此基础之上，添加如下配置：
+    ```csharp
+    http.cors.enabled: true 
+    http.cors.allow-origin: "*"
+    ```
+    > 不太清楚是否集群中所有节点的elasticsearch.yml都需要添加，但是我只是在部署了elasticsearch-head节点上做了添加，也能正常使用
+
+- 安装node.js，下载地址：https://nodejs.org/en/download/
+  - cmd进入到node.js的安装路径，执行：
+    ```csharp
+    npm install -g grunt-cli
+    ```  
+  - 试试`grunt -version`以确定上述命令执行成功
+- 下载elasticsearch-head，`git clone`或者直接下载zip包都可以，随意解压到一个路径，但是保险一些还是建议路径中不要携带中文、空格之类的
+- 修改 \elasticsearch-head-master\Gruntfile.js文件：
+  ![](images/elastic_search安装-01.png)
+- 修改elasticsearch-head-master_site\app.js文件：
+  ![](images/elastic_search安装-02.png)
+  这个地址就是上面提到过的network.host，如果你有改动的话这里最好改成一致的（更方便），虽然本地访问localhost也是没有问题的
+- cmd进入elasticsearch-head解压目录，执行：
+  ```csharp
+  npm install
+  ```
+  速度很慢的话可以试试国内的镜像：
+  ```csharp
+  npm install -g cnpm --registry=https://registry.npm.taobao.org
+  ```
+- 安装成功后启动elasticsearch-heads：
+  ```csharp
+  npm run start
+  ```
+- 访问下http://localhost:9100 验证站点是否部署成功：
+  ![](images/elastic_search安装-03.png)
 
 ### 分词插件
+分词插件推荐使用[es-ik](https://github.com/medcl/elasticsearch-analysis-ik)。
+
+- 要小心的版本问题，ES对插件版本似乎是严格匹配的，所以仔细看看github主页上关于ik的版本说明，确定选择合适的版本
+- 直接选择编译好的release版本，解压后放到$ES_HOME\6.7.1\plugins路径下，ES启动时会自动加载该插件
+- 如果是集群部署的话，需要在所有节点机器都安装ik插件
+- 如果启动不了，请首先确定下ik所在的整个路径中是否含有中文或者空格
+
+**参考地址：**
+https://www.jianshu.com/p/4467cfe4e651
+http://www.cnblogs.com/zlslch/p/6440373.html
+
+
