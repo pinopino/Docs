@@ -105,8 +105,32 @@ ES的各种配置分别放置在三个文件中：
 - 如果是集群部署的话，需要在所有节点机器都安装ik插件
 - 如果启动不了，请首先确定下ik所在的整个路径中是否含有中文或者空格
 
+### sql插件
+sql插件使用的是[elasticsearch-sql](https://github.com/NLPchina/elasticsearch-sql)。请注意版本，插件目前最高只支持到ES 6.7.0！
+
+- 与官方之间的区别？
+- 直接通过`elasticsearch-plugin`进行安装：
+    ```csharp
+    ./bin/elasticsearch-plugin install https://github.com/NLPchina/elasticsearch-sql/releases/download/6.7.0.0/elasticsearch-sql-6.7.0.0.zip
+    ```
+    如果之前有在运行ES实例，记得插件安装好后重启一下实例
+- 插件的使用最好在它自带的web管理页面进行，比较方便，所以安装web管理页面也可以了解下：
+    - 从[这个](https://github.com/NLPchina/elasticsearch-sql/releases/download/5.4.1.0/es-sql-site-standalone.zip)地址下载站点，解压，随意放置到某个路径下（为了不会遇到莫名其妙的问题，路径中最好不要含有中文和空格）
+    - 在cmd中执行下面的命令：
+        ```csharp
+        cd site-server
+        npm install express --save
+        node node-server.js 
+        ```
+    - 最后一行执行时没有任何显示，所以只能通过浏览器访问来确定站点已经成功启起来。地址默认在localhost:8080，如果端口有冲突可以修改`site_configuration.json`文件，启动后界面如下：
+    ![](images/elastic_search安装-04.png)
+    千万要小心途中箭头指向的部分，简单来说，如果我们的ES设定了network.host，那么这里的地址一定要使用同样的地址才行。比如，不能因为你在本地，就直接填上一个localhost，那是不行的
+
+
+
 **参考地址：**
 https://www.jianshu.com/p/4467cfe4e651
 http://www.cnblogs.com/zlslch/p/6440373.html
+https://github.com/NLPchina/elasticsearch-sql
 
 
