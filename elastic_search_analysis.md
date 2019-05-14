@@ -1,11 +1,11 @@
-ElasticsearchÖÐµÄMappingºÍAnalysis
+ï»¿Elasticsearchä¸­çš„Mappingå’ŒAnalysis
 =========
 
 ## Analysis
 
-¹ØÓÚanalysisÄãÐèÒªÒâÊ¶µ½Ò»µã£¬Ë÷ÒýÒ»¸öÎÄµµÒÔ¼°²éÑ¯µÄÊ±ºòÆäÊµ¶¼»áÐèÒªÓÃµ½·Ö´ÊÆ÷µÄ£¬Õâ¸öÊ±ºòÍ¨³£¶þÕßËùÓÃµÄ·Ö´ÊÆ÷Ó¦¸ÃÒªÒ»ÖÂ²ÅºÃ¡£
+å…³äºŽanalysisä½ éœ€è¦æ„è¯†åˆ°ä¸€ç‚¹ï¼Œç´¢å¼•ä¸€ä¸ªæ–‡æ¡£ä»¥åŠæŸ¥è¯¢çš„æ—¶å€™å…¶å®žéƒ½ä¼šéœ€è¦ç”¨åˆ°åˆ†è¯å™¨çš„ï¼Œè¿™ä¸ªæ—¶å€™é€šå¸¸äºŒè€…æ‰€ç”¨çš„åˆ†è¯å™¨åº”è¯¥è¦ä¸€è‡´æ‰å¥½ã€‚
 
-Ë÷ÒýÎÄµµµÄÊ±ºò£¬Èç¹ûÎÒÃÇÃ»ÓÐÖ¸¶¨ÈÎºÎ·Ö´ÊÆ÷£¬ÄÇÃ´Ä¬ÈÏES¾Í»áÊ¹ÓÃ`standard analyzer`£»¶ø²éÑ¯Ê±·Ö´ÊÆ÷µÄÈ·¶¨ESÓÐÒ»¸öÓÅÏÈ¼¶£º
+ç´¢å¼•æ–‡æ¡£çš„æ—¶å€™ï¼Œå¦‚æžœæˆ‘ä»¬æ²¡æœ‰æŒ‡å®šä»»ä½•åˆ†è¯å™¨ï¼Œé‚£ä¹ˆé»˜è®¤ESå°±ä¼šä½¿ç”¨`standard analyzer`ï¼›è€ŒæŸ¥è¯¢æ—¶åˆ†è¯å™¨çš„ç¡®å®šESæœ‰ä¸€ä¸ªä¼˜å…ˆçº§ï¼š
 - An analyzer specified in the query itself
 - The search_analyzer mapping parameter
 - The analyzer mapping parameter
@@ -13,10 +13,10 @@ ElasticsearchÖÐµÄMappingºÍAnalysis
 - An analyzer in the index settings called default
 - The standard analyzer
 
-ÄÜ¹»¿´µ½£¬×îÖÕÈç¹ûÊ²Ã´¶¼Ã»ÓÐÖ¸¶¨µÄ»°Ä¬ÈÏÖµÒ²»áÊÇ`standard analyzer`£»¶øÁíÍâ£¬ÔÚÃ¿Ò»´ÎµÄ²éÑ¯ÖÐÖ±½ÓÖ¸¶¨analyzer½«»á¼«´óµÄ·½±ãÎÒÃÇ²âÊÔ²éÑ¯£º
+èƒ½å¤Ÿçœ‹åˆ°ï¼Œæœ€ç»ˆå¦‚æžœä»€ä¹ˆéƒ½æ²¡æœ‰æŒ‡å®šçš„è¯é»˜è®¤å€¼ä¹Ÿä¼šæ˜¯`standard analyzer`ï¼›è€Œå¦å¤–ï¼Œåœ¨æ¯ä¸€æ¬¡çš„æŸ¥è¯¢ä¸­ç›´æŽ¥æŒ‡å®šanalyzerå°†ä¼šæžå¤§çš„æ–¹ä¾¿æˆ‘ä»¬æµ‹è¯•æŸ¥è¯¢ï¼š
 ```csharp
-// ²»ÐèÒªÈ¥Ö¸¶¨Ë÷Òý£¬ÒòÎªÕâÖ»ÊÇÒ»¸ö¶ÀÁ¢µÄ²âÊÔÓï¾ä£¬Óë¾ßÌåµÄË÷ÒýÎÞ¹Ø
-// ¿ÉÒÔÃ¿´Î¶¼»»ÓÃ²»Í¬µÄanalyzer²âÊÔÐ§¹û
+// ä¸éœ€è¦åŽ»æŒ‡å®šç´¢å¼•ï¼Œå› ä¸ºè¿™åªæ˜¯ä¸€ä¸ªç‹¬ç«‹çš„æµ‹è¯•è¯­å¥ï¼Œä¸Žå…·ä½“çš„ç´¢å¼•æ— å…³
+// å¯ä»¥æ¯æ¬¡éƒ½æ¢ç”¨ä¸åŒçš„analyzeræµ‹è¯•æ•ˆæžœ
 POST /_analyze
 {
   "analyzer": "whitespace",
@@ -24,18 +24,18 @@ POST /_analyze
 }
 ```
 
-ÎÒÃÇÓÐ±ØÒªÔÙÀ´¿´¿´`analyzer`£¬ÔÚESÖÐËüµÄ¶¨ÒåºÜ¼òµ¥£¬¾ÍÊÇÓÉÈý²¿·Ö´ò°ü×é³ÉµÄÒ»¸öÕûÌå£º
-- ×Ö·û¹ýÂËÆ÷£¨character filters£©
-±ÈÈç£¬ÄÜ¹»È¥³ýHTML±ê¼ÇÓÖ»òÕß×ª»» "&" Îª "and"£»ÁíÍâ£¬¶à¸ö×Ö·û¹ýÂËÆ÷¿ÉÒÔ´®ÁªÆðÀ´°´Ë³ÐòÖ´ÐÐ£»
-- ·Ö´ÊÆ÷£¨tokenizers£©
-¾­¹ý·Ö´ÊÆ÷µÄ·Ö´ÊÎÒÃÇ²ÅÄÜµÃµ½Ò»¸ö¸öµÄtoken£¬ÒÔ¹©ÏÂÒ»²½±ê¼Ç¹ýÂËÆ÷Ê¹ÓÃ£»²»Ïñ×Ö·û¹ýÂËÆ÷£¬Ò»¸öanalyzerÖ»ÄÜº¬ÓÐÒ»¸ö·Ö´ÊÆ÷
-- ±ê¼Ç¹ýÂËÆ÷£¨token filters£©
-±ÈÈç£¬`lowercase` token filterÄÜ¹»½«ËùÓÐtokenÈ«²¿×ª»»ÎªÐ¡Ð´£»ÓÖ»òÕß£¬Ò»¸ö`stop` token filterÄÜ¹»É¾µôtokenËùÓÐ³£¼ûµÄÍ£´Ê£»±ê¼Ç¹ýÂËÆ÷Ò²ÄÜ¹»¶à¸ö´®ÁªÆðÀ´°´Ë³ÐòÖ´ÐÐ£»
+æˆ‘ä»¬æœ‰å¿…è¦å†æ¥çœ‹çœ‹`analyzer`ï¼Œåœ¨ESä¸­å®ƒçš„å®šä¹‰å¾ˆç®€å•ï¼Œå°±æ˜¯ç”±ä¸‰éƒ¨åˆ†æ‰“åŒ…ç»„æˆçš„ä¸€ä¸ªæ•´ä½“ï¼š
+- å­—ç¬¦è¿‡æ»¤å™¨ï¼ˆcharacter filtersï¼‰
+æ¯”å¦‚ï¼Œèƒ½å¤ŸåŽ»é™¤HTMLæ ‡è®°åˆæˆ–è€…è½¬æ¢ "&" ä¸º "and"ï¼›å¦å¤–ï¼Œå¤šä¸ªå­—ç¬¦è¿‡æ»¤å™¨å¯ä»¥ä¸²è”èµ·æ¥æŒ‰é¡ºåºæ‰§è¡Œï¼›
+- åˆ†è¯å™¨ï¼ˆtokenizersï¼‰
+ç»è¿‡åˆ†è¯å™¨çš„åˆ†è¯æˆ‘ä»¬æ‰èƒ½å¾—åˆ°ä¸€ä¸ªä¸ªçš„tokenï¼Œä»¥ä¾›ä¸‹ä¸€æ­¥æ ‡è®°è¿‡æ»¤å™¨ä½¿ç”¨ï¼›ä¸åƒå­—ç¬¦è¿‡æ»¤å™¨ï¼Œä¸€ä¸ªanalyzeråªèƒ½å«æœ‰ä¸€ä¸ªåˆ†è¯å™¨
+- æ ‡è®°è¿‡æ»¤å™¨ï¼ˆtoken filtersï¼‰
+æ¯”å¦‚ï¼Œ`lowercase` token filterèƒ½å¤Ÿå°†æ‰€æœ‰tokenå…¨éƒ¨è½¬æ¢ä¸ºå°å†™ï¼›åˆæˆ–è€…ï¼Œä¸€ä¸ª`stop` token filterèƒ½å¤Ÿåˆ æŽ‰tokenæ‰€æœ‰å¸¸è§çš„åœè¯ï¼›æ ‡è®°è¿‡æ»¤å™¨ä¹Ÿèƒ½å¤Ÿå¤šä¸ªä¸²è”èµ·æ¥æŒ‰é¡ºåºæ‰§è¡Œï¼›
 
-ÕâÒâÎ¶×Å¹ØÓÚ`analyzer`ÎÒÃÇ¿ÉÒÔÈÎÒâÌæ»»Æä´ò°üÖÐµÄÈý¸ö×é¼þÀ´´´½¨ÊôÓÚÎÒÃÇ×Ô¼ºµÄ`custom analyzer`£º
+è¿™æ„å‘³ç€å…³äºŽ`analyzer`æˆ‘ä»¬å¯ä»¥ä»»æ„æ›¿æ¢å…¶æ‰“åŒ…ä¸­çš„ä¸‰ä¸ªç»„ä»¶æ¥åˆ›å»ºå±žäºŽæˆ‘ä»¬è‡ªå·±çš„`custom analyzer`ï¼š
 ```csharp
-// ×¢ÒâÒòÎªÊÇ×Ô¶¨ÒåµÄ£¬ËùÒÔÕâÀïtypeÊôÐÔÖµÒ»¶¨ÊÇ"custom"
-// ×¢ÒâanalyzerµÄÉèÖÃÊÇ·ÅÔÚË÷ÒýµÄ"settings"½ÚÖÐµÄ£¬²¢Ã»ÓÐÔÚ"mapping"ÖÐ
+// æ³¨æ„å› ä¸ºæ˜¯è‡ªå®šä¹‰çš„ï¼Œæ‰€ä»¥è¿™é‡Œtypeå±žæ€§å€¼ä¸€å®šæ˜¯"custom"
+// æ³¨æ„analyzerçš„è®¾ç½®æ˜¯æ”¾åœ¨ç´¢å¼•çš„"settings"èŠ‚ä¸­çš„ï¼Œå¹¶æ²¡æœ‰åœ¨"mapping"ä¸­
 PUT my_index
 {
   "settings": {
@@ -60,12 +60,12 @@ PUT my_index
 POST my_index/_analyze
 {
   "analyzer": "my_custom_analyzer",
-  "text": "Is this <b>d¨¦j¨¤ vu</b>?"
+  "text": "Is this <b>dÃ©jÃ  vu</b>?"
 }
 
-// ÎÒÃÇÉõÖÁ»¹¿ÉÒÔ¶ÔÕâÈý¸ö×é¼þ·Ö±ð½øÐÐ¸üÏêÏ¸µÄÉèÖÃ
-// ÊÂÊµÉÏÕâÒ²ÌáÐÑÎÒÃÇ£¬ÔÚÊ¹ÓÃÒ»Ð©µÚÈý·½analyzerÊ±¾¡Á¿¶àÈ¥¿´¿´ÓÐÐ©Ê²Ã´
-// ÉèÖÃ¿ÉÒÔ¶¨ÖÆµÄ
+// æˆ‘ä»¬ç”šè‡³è¿˜å¯ä»¥å¯¹è¿™ä¸‰ä¸ªç»„ä»¶åˆ†åˆ«è¿›è¡Œæ›´è¯¦ç»†çš„è®¾ç½®
+// äº‹å®žä¸Šè¿™ä¹Ÿæé†’æˆ‘ä»¬ï¼Œåœ¨ä½¿ç”¨ä¸€äº›ç¬¬ä¸‰æ–¹analyzeræ—¶å°½é‡å¤šåŽ»çœ‹çœ‹æœ‰äº›ä»€ä¹ˆ
+// è®¾ç½®å¯ä»¥å®šåˆ¶çš„
 PUT my_index
 {
   "settings": {
@@ -114,10 +114,10 @@ POST my_index/_analyze
   "text":     "I'm a :) person, and you?"
 }
 ```
-Èç¹ûÄã¾õµÃES×Ô´øµÄanalyzerÅäÖÃÅäÖÃÒ²ÄÜ¹»ÓÃ£¬ÉÏÃæÕâÐ©ÓÐµãÐËÊ¦¶¯ÖÚÁË£¬ÄÇÃ´¿ÉÒÔÏñÏÂÃæÕâÑù£º
+å¦‚æžœä½ è§‰å¾—ESè‡ªå¸¦çš„analyzeré…ç½®é…ç½®ä¹Ÿèƒ½å¤Ÿç”¨ï¼Œä¸Šé¢è¿™äº›æœ‰ç‚¹å…´å¸ˆåŠ¨ä¼—äº†ï¼Œé‚£ä¹ˆå¯ä»¥åƒä¸‹é¢è¿™æ ·ï¼š
 ```csharp
-// ÎÒÃÇÉùÃ÷ÁËÒ»¸öÃûÎª"std_english"µÄanalyzer£¬µ«ÊÇËüµÄÀàÐÍ²¢²»ÊÇcustom£¬
-// ¶øÊÇÕâÀïµÄ"standard"£¬ÕâÒâÎ¶×ÅÎÒÃÇ½ö½öÊÇ»ùÓÚstandard×öµÄÒ»Ð©×Ô¶¨Òå¶øÒÑ
+// æˆ‘ä»¬å£°æ˜Žäº†ä¸€ä¸ªåä¸º"std_english"çš„analyzerï¼Œä½†æ˜¯å®ƒçš„ç±»åž‹å¹¶ä¸æ˜¯customï¼Œ
+// è€Œæ˜¯è¿™é‡Œçš„"standard"ï¼Œè¿™æ„å‘³ç€æˆ‘ä»¬ä»…ä»…æ˜¯åŸºäºŽstandardåšçš„ä¸€äº›è‡ªå®šä¹‰è€Œå·²
 PUT my_index
 {
   "settings": {
@@ -125,10 +125,10 @@ PUT my_index
       "analyzer": {
         "std_english": { 
           "type":      "standard",
-          "stopwords": "_english_" // "stopwords"ÊÇstandard analyzer
-          // ÌØÓÐµÄÒ»¸öÅäÖÃÊôÐÔ£¬ËùÒÔÎÒÃÇÕâÀï²ÅÄÜÊ¹ÓÃËü½øÐÐÒ»Ð©¶¨ÖÆ£»
-          // ÕâÒ²ÌáÐÑÎÒÃÇ£¬Èç¹ûÊ¹ÓÃÆäËüµÚÈý·½µÄanalyzer£¬¶àÈ¥¹Ø×¢ÏÂËüÃÇÌá
-          // ¹©ÁËÄÇÐ©¿É¶¨ÖÆÊôÐÔ
+          "stopwords": "_english_" // "stopwords"æ˜¯standard analyzer
+          // ç‰¹æœ‰çš„ä¸€ä¸ªé…ç½®å±žæ€§ï¼Œæ‰€ä»¥æˆ‘ä»¬è¿™é‡Œæ‰èƒ½ä½¿ç”¨å®ƒè¿›è¡Œä¸€äº›å®šåˆ¶ï¼›
+          // è¿™ä¹Ÿæé†’æˆ‘ä»¬ï¼Œå¦‚æžœä½¿ç”¨å…¶å®ƒç¬¬ä¸‰æ–¹çš„analyzerï¼Œå¤šåŽ»å…³æ³¨ä¸‹å®ƒä»¬æ
+          // ä¾›äº†é‚£äº›å¯å®šåˆ¶å±žæ€§
         }
       }
     }
@@ -163,6 +163,6 @@ POST my_index/_analyze
   "text": "The old brown cow"
 }
 ```
-ÉÏÃæÕâ¶Î´úÂëÒ²ÑÝÊ¾ÁËÈçºÎÎª`multi-fields` Ö¸¶¨²»Í¬µÄanalyzer£¬ÖµµÃÒ»¿´¡£
+ä¸Šé¢è¿™æ®µä»£ç ä¹Ÿæ¼”ç¤ºäº†å¦‚ä½•ä¸º`multi-fields` æŒ‡å®šä¸åŒçš„analyzerï¼Œå€¼å¾—ä¸€çœ‹ã€‚
 
 
