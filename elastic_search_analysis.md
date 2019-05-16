@@ -24,6 +24,23 @@ POST /_analyze
 }
 ```
 
+当我们通过测试确定最终要使用的分词器，我们可能想要更改之前关于分词器的设置，可以这样做：
+```csharp
+// 对于search_analyzer，可能更方便的是在查询的时候动态指定而不是像这样配置
+// 成一个`全局`的固定值，不过暂时没有找到查询接口支持这样的参数
+PUT /my_index/_mapping/my_type
+{
+  "properties": {
+      "content": {
+          "type": "text",
+          "analyzer": "ik_max_word",
+          "search_analyzer": "ik_smart"
+      }
+  }
+}
+```
+是的，也就是我们的PUT mapping接口。不用担心你会修改到其它值，因为在已经索引了文档的情况下你能轻易改变的只有这里的search_analyzer的值。
+
 我们有必要再来看看`analyzer`，在ES中它的定义很简单，就是由三部分打包组成的一个整体：
 - 字符过滤器（character filters）
 比如，能够去除HTML标记又或者转换 "&" 为 "and"；另外，多个字符过滤器可以串联起来按顺序执行；
