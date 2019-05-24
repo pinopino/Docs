@@ -90,4 +90,5 @@ ElasticSearch的一些基础概念
 - sdf
   
 参考链接：
+https://www.elastic.co/guide/en/elasticsearch/guide/master/index.html （版本可能有些旧但能提供一个很好的大纲）
 https://www.cnblogs.com/zhukunrong/p/5224558.html

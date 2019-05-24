@@ -129,6 +129,7 @@ sql插件使用的是[elasticsearch-sql](https://github.com/NLPchina/elasticsear
 
 
 **参考地址：**
+https://www.elastic.co/guide/en/elasticsearch/reference/6.7/settings.html
 https://www.jianshu.com/p/4467cfe4e651
 http://www.cnblogs.com/zlslch/p/6440373.html
 https://github.com/NLPchina/elasticsearch-sql
