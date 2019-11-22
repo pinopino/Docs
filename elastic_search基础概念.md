@@ -1,6 +1,6 @@
-ElasticSearch的一些基础概念
+ElasticSearch的一些基础概念-part1
 =========
-
+#### 以下描述均基于ES 6.x版本
 #### 与关系型数据库类比
 Elasticsearch中的几种名词关系（类比关系型数据库）：
 ```csharp
@@ -24,15 +24,72 @@ ES中实际存储数据的地方是 ***分片***（`shard`），索引只是一�
 
 主分片的数量在创建之初即定好了不可以修改（这个数量定义了能存储到索引里数据的最大数量（当然实际还是取决于你的数据、硬件和应用场景）），复制分片的数量却可以修改；一个主分片能存储的文档数是固定的（int.max-128），同时考虑到集群收缩和扩容时迁移分片的开销，主分片的数量需要认真评估与考虑
 
-像MongoDB一样，在ES中并不需要显式的创建索引（数据库）和类型（表），直接插入一条新的数据ES会自动为你创建好；这里默认创建好的也算是一个集群，一个单一节点的集群。我们也可以添加更多的节点进来，只要后续添加的节点与第一个节点含有相同的cluster.name即可（ES内部会通过广播自动发现第一个节点所在的集群）
+像MongoDB一样，在ES中并不需要显式的创建索引（数据库）和类型（表），直接插入一条新的数据ES会自动为你创建好；这里默认创建好的也算是一个集群，一个单一节点的集群，我们也可以添加更多的节点进来。比如当我们在同一台机器上启动第二个节点时，只要它和第一个节点有同样的cluster.name配置，它就会自动发现集群并加入到其中。但是在不同机器上启动节点的时候，为了加入到同一集群，需要配置一个可连接到的单播主机列表（`discovery.zen.ping.unicast.hosts`）
 
-ES中规定了存储的文档是不可变的。如果我们需要更新已存在的文档，只能是重新索引新的文档，再替换掉之前的：
+#### ES中的基本操作
+传统数据库上有的增删改查动作在ES中一样的[概念](https://www.elastic.co/guide/cn/elasticsearch/guide/current/index-doc.html)一样的存在。
+- 增：
 ```csharp
-GET /website/blog/1
-...修改...
-PUT /website/blog/1
+PUT /{index}/{type}/{id}
+{
+  "field": "value",
+  ...
+}
 ```
-当然ES也提供了一步到位的update接口。
+
+- 删
+```csharp
+DELETE /website/blog/123
+```
+删除文档不会立即将文档从磁盘中删除，只是将文档标记为已删除状态。随着不断的索引更多的数据，ES将会在后台清理标记为已删除的文档。
+
+- 改
+```csharp
+// 全部更新
+PUT /website/blog/123
+{
+  "title": "My first blog entry",
+  "text":  "I am starting to get the hang of this...",
+  "date":  "2014/01/02"
+}
+
+// 部分更新
+POST /website/blog/1/_update
+{
+   "doc" : {
+      "tags" : [ "testing" ],
+      "views": 0
+   }
+}
+```
+ES中的文档一旦被索引了之后就是不可变的，所以更新一个文档（整个文档或者文档的部分字段更新）都会导致重新索引该文档，内部要执行同样的操作步骤：
+1. 从旧文档构建 JSON
+2. 更改该 JSON
+3. 删除旧文档
+4. 索引一个新文档
+
+像是上面的请求我们会收到类似如下的响应：
+```csharp
+{
+  "_index" :   "website",
+  "_type" :    "blog",
+  "_id" :      "123",
+  "_version" : 2,
+  "created":   false 
+}
+```
+注意到现在文档本身的version被递增到了2，其次created字段值为false。同删除文档一样，ES在内部将旧有的文档标记为了已删除，
+
+- 查
+```csharp
+// 仅仅检测文档是是否存在，http返回200 ok为存在，404为不存在
+HEAD http://localhost:9200/website/blog/123
+
+GET twitter/_doc/0?_source_includes=*.id&_source_excludes=entities
+```
+这种带field过滤的查询字符串实际试下来没有作用，不知道是什么原因；网上能找到的大部分例子都是基于post在json中提供字段筛选信息。
+另外，如果索引一个文档是提供了自己的routing字段，那么查询时也就需要明确表明routing key：
+`GET twitter/_doc/2?routing=user1`
 
 #### ES中的并发控制
 在ES中处理并发采用的是乐观并发控制机制，即每个文档都含有一个_version字段。我们可能的更新动作有两类：
@@ -60,7 +117,7 @@ PUT /website/blog/1
 - 节点3转发同步消息到复制分片的时候
 > *第一个很容易理解，关系型数据库也会遇到这样的问题；第二个可以想象如果有两个很靠近的更新操作，主片的更新均为成功，此时同步复制请求的发送完全可能会先后倒置，这样一来ES必须要有一定的机制防止乱序到达的复制请求互相覆盖。*
 
-最后，ES的这些写操作，还有一些细微的调节参数，比较重要的有：
+最后，ES的这些写操作，还有一些细微的[调节参数](https://www.elastic.co/guide/cn/elasticsearch/guide/current/distrib-write.html)，比较重要的有：
 - `replication`
  用于控制上述复制行为；默认值是sync，这将导致主分片得到复制分片的成功响应后才返回。也可以设置为async，但是你将不会知道操作是否已经成功复制到所有复制分片上，并且还有可能导致过多的写请求压垮ES
 
@@ -70,19 +127,20 @@ PUT /website/blog/1
  这个api参数要注意跟`discovery.zen.minimum_master_nodes`[设置](https://www.elastic.co/guide/en/elasticsearch/reference/6.7/discovery-settings.html)区分，二者要达到的目的可以说是很相似的，有点殊途同归的味道，都是为了避免在发生网络分区故障（network partition）的时候进行**写**操作，进而导致数据不一致。
 
 #### ES中的存储
-在ES中，每个字段的所有数据都是默认被索引的。即每个字段都有为了快速检索设置的专用倒排索引。而且，不像其他多数的数据库，它能在同一个查询中使用所有这些倒排索引，并以很快的速度返回结果。
+在ES中，每个字段的所有数据都是[默认被索引的](https://www.elastic.co/guide/cn/elasticsearch/guide/current/data-in-data-out.html)。即每个字段都有为了快速检索设置的专用倒排索引。而且，不像其他多数的数据库，它能在同一个查询中使用所有这些倒排索引，并以很快的速度返回结果。
 
 文档被索引后包含一些比较重要的元数据信息：
 - `_index`
-  文档存放在哪里
+  文档存放在哪里。索引名字必须小写，不能以下划线开头，不能有`.`号，最大长度不能超过255 byte
 - `_type`
-  虽说同种类的数据放在同一个索引下，但它们也只是松散的组合在一起而已。如果明确定义一些数据中的子分区会是很有用的，_type就是用来提供这样一种逻辑分区的。这个决定也带了非常深远的影响，主要是因为lucene中文档的存储方式
+  虽说同种类的数据放在同一个索引下，但它们也只是松散的组合在一起而已。如果明确定义一些数据中的子分区会是很有用的，_type就是用来提供这样一种逻辑分区的。
+  一个_type命名可以是大写或者小写，但是不能以下划线或者句号开头，不应该包含逗号，并且长度限制为256个字符
 - `_id`
   文档的唯一标识，可以由ES提供也可以自行提供；建议是直接使用ES提供的自动生成id
 - `_source`
-  ES在该字段存储代表文档体的JSON字符串，由充足的[理由](https://www.elastic.co/guide/cn/elasticsearch/guide/current/root-object.html)让你保留这个字段而不是禁用它，所以放置默认就好
+  ES在该字段存储代表文档体的JSON字符串，有充足的[理由](https://www.elastic.co/guide/cn/elasticsearch/guide/current/root-object.html)让你保留这个字段而不是禁用它，所以放置默认就好
 
-可以思考下ES中的类型（包括文档类型以及文档中每个字段的类型）是如何来实现的？
+在存储或者说索引了文档之后，ES引入了类型的概念。可以思考下ES中的类型（包括文档类型以及文档中每个字段的类型）是如何来实现的？
 
 首先lucene中没有文档类型的概念，ES每个文档的类型名被存储在_type元数据字段上，当需要检索某个类型的文档时，ES通过在_type字段上使用过滤器限制只返回这个类型的文档。
 
@@ -92,61 +150,9 @@ ES中我们可能会在一个索引里存储不同的文档类型，不同的类
 
 通过mapping我们将json字段与ES类型信息之间的映射关系保存下来。ES支持的常见数据类型有：`string`、`byte`、`short`、`integer`、`long`、`float`、`double`、`boolean`、`date`
 
-会遇到自定义字段mapping的情况不多，因为基本的数据类型已经能够应付大多数的情况；偶尔需要自定义的一般来说是json中的string字段，比如一个简单的例子，可能一个英文方式表达的日期`Feb,12,2016`，这个时候如果你也想将该string看作是日期类型的话，自定义mapping就可以派上用场了。
+会遇到自定义字段mapping的情况不多，因为基本的数据类型已经能够应付大多数的情况；偶尔需要自定义的一般来说是json中的string字段，比如一个简单的例子，可能一个英文方式表达的日期`Feb, 12, 2016`，这个时候如果你也想将该string看作是日期类型的话，自定义mapping就可以派上用场了。
 
-前面有提到ES会在插入第一条数据的时候自动为我们创建索引和类型，这个动作也可以我们自己手动来完成，这个时候创建索引你可能会感兴趣一些参数、属性设置：
-```csharp
-PUT / blogs 
-{
-    "settings": {
-        "number_of_shards": 3,
-        "number_of_replicas": 1
-    },
-    "mappings": {
-        "tweet": {
-            "properties": {
-                "tweet": {
-                    "type": "string",
-                    "analyzer": "english"
-                },
-                "date": {
-                    "type": "date"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "user_id": {
-                    "type": "long"
-                }
-            }
-        }
-    }
-}
-```
-如上，对于不是string的field，一般只需要设置type即可；而针对string类型主要有两个参数需要注意：
-- `index`，可选值analyzed、not_analyzed、no
-- `analyer`，用来给该字段进行分词的
-
-#### ES分析器
-上面的analyer也就是ES中的分析器，其主要工作就是用来分词并执行标准化（normalize）的。总的来说分析器包含三部分功能：
-- 字符过滤器
-- 分词器
-- token过滤器
-
-Elasticsearch提供了开箱即用的字符过滤器、分词器和token过滤器。这些可以组合起来形成自定义的分析器以用于不同的目的。
-
-另外，我们只能搜索在索引中出现的词条，所以索引文本和查询字符串必须标准化为相同的格式（即都过同一种analyer处理）。
-
-可以使用analyze API来看文本是如何被分析的。在消息体里，指定分析器和要分析的文本：
-```csharp
-GET /_analyze
-{
-  "analyzer": "standard",
-  "text": "Text to analyze"
-}
-```
-
-汉语和英语的分词规则必然不一样，因此默认的analyzer可能无法很好的与汉语结合工作，因此我们需要指定特定的analyzer。先看看当前的mapping是怎么样的，是否符合我们的预期：
+前面有提到ES会在插入第一条数据的时候自动为我们创建索引和类型，要查看一个类型对应的mapping信息，你可以：
 `GET /gb/_mapping/tweet`
 这会返回类似下面的结果：
 ```csharp
@@ -175,21 +181,114 @@ GET /_analyze
 }
 ```
 
-要做自定义mapping的话，主要指定type和index参数：
+当然上述自动映射（`dynamic mapping`）也可以我们自己手动来完成，这个时候创建索引你可能会感兴趣一些参数、属性设置：
 ```csharp
+PUT /blogs 
 {
-    "tag": {
-        "type":     "string",
-        "index":    "not_analyzed"
+    "settings": {
+        "number_of_shards": 3,
+        "number_of_replicas": 1
     },
-    "tweet": {
-        "type":     "string",
-        "analyzer": "english"
+    "mappings": {
+        "tweet": {
+            "properties": {
+                "tweet": {
+                    "type": "string",
+                    "analyzer": "english"
+                },
+                "date": {
+                    "type": "date"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "long"
+                }
+            }
+        }
     }
 }
 ```
-如上，虽然tag是string类型，但是我们指定了index属性为not_analyzed，因此ES不会对其做全文分析加倒排索引。而tweet字段则相反，我们指定了为其建立倒排索引且使用的分析器为english。
 
+如果自动生成的mapping不符合当前要求的话，很遗憾，我们几乎无法修改一个类型的mapping信息，因为这样做的话会导致已经被索引了的数据变得无效，所以通常一开始的时候就需要我们尽量定义好mapping文件；
+
+一定要修改的话只能是使用新的mapping信息重新建立新的索引了。当然，某些修改仍然是可行的，比如我们决定在tweet映射增加一个新的名为tag的not_analyzed的文本域：
+```csharp
+PUT /gb/_mapping/tweet
+{
+  "properties" : {
+    "tag" : {
+      "type" :    "string",
+      "index":    "not_analyzed"
+    }
+  }
+}
+```
+
+#### ES分析器
+前面的mapping信息中，对于不是string的field，一般只需要设置type即可；而针对string类型有两个参数值得注意：
+- `index`，可选值`analyzed`、`not_analyzed`、`no`（不索引，该field不会被搜索到）
+- `analyer`，用来给该字段进行分词
+
+这里的analyer也就是ES中的分析器了，其主要工作就是用来分词并执行标准化（normalize）的。总的来说分析器包含三部分功能：
+- 字符过滤器
+- 分词器
+- token过滤器
+
+Elasticsearch提供了开箱即用的字符过滤器、分词器和token过滤器。这些可以组合起来形成自定义的分析器以用于不同的目的。
+
+另外，我们只能搜索在索引中出现的词条，所以索引文本和查询字符串必须标准化为相同的格式（即都过同一种analyer处理）。
+
+可以使用analyze API来看文本是如何被分析的。在消息体里，指定分析器和要分析的文本：
+```csharp
+GET /_analyze
+{
+  "analyzer": "standard",
+  "text": "Text to analyze"
+}
+
+// 或者
+post http://127.0.0.1:9200/abc2/_analyze/
+{
+  "field": "FullName", // 使用指定field对应的analyzer来分析text值
+  "text": "库存商品" 
+}
+```
+
+汉语和英语的分词规则必然不一样，因此默认的analyzer可能无法很好的与汉语结合工作，因此我们需要指定特定的analyzer。可以在两个层面做这件事：
+```csharp
+PUT http://127.0.0.1:9200/test/
+{
+  "settings": {
+    "analysis": {
+      "analyzer": "ik_smart" // 对整个test索引有效
+    }
+  },
+  "mappings": {
+    "goods": {
+        "properties": {
+            "title": { // 对单独某个字段有效
+                "type":      "string",
+                "analyzer":  "my_analyzer"
+            }
+        },
+       "dynamic_templates": [
+        {
+          "for_test_only": {
+            "match": "FullName", // 对单独某个字段有效
+            "match_mapping_type": "string",
+            "mapping": {
+              "type": "text",
+              "analyzer": "ik_smart"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+```
 
   
 参考链接：
