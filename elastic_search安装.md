@@ -1,6 +1,6 @@
 ElasticSearch的安装
 =========
-
+#### 以下描述均基于ES 6.x版本
 ### 前置条件
 一些比较重要的前置条件（windows、linux下均适用）需要先声明一下：
 - 目前（2019.5.9）.net client支持到的ES最高版本是6.7.1，而ES插件启动似乎对版本要求颇为严格，所以尽管ES版本已经走到了7.x，所以想要很方便的使用 .net client还是老实使用6.7.1版本吧
@@ -39,22 +39,24 @@ ES的各种配置分别放置在三个文件中：
 - `log4j2.properties`，用于配置ES的日志系统
 
 比较重要的配置项描述如下：
-- path.data、path.logs，前面已经描述过了
-- cluster.name，要想组集群，这个选项非常关键，因为只有当节点的cluster.name都一样的时候，它们才会抱团形成集群；另外，单一节点也可以设置该值，至少提供一个有意义的名称也是很有帮助的
-- node.name，提供一个有意义的名称也是很有帮助的
-- network.host，默认值是127.0.0.1，运行单一节点的时候这个值很方便；而如果是要组集群，则不能绑定到回环地址上
-    > 一旦你为network.host提供了新值，ES会认为你此时是从debug环境迁移到生产环境，因此会开启更为严格的startup检测，所以有时候设置了该值，可能会导致ES启动不了就是这个原因
-- http.port、transport.port，当ES的默认网络端口被其他应用抢占了端口时，可以使用这两个配置重新分配新的端口
-- discovery.seed_hosts，在默认情况下ES会绑定到回环地址，并且检测同一台server上9300-9305这个端口范围，并试图抱团其它可能存在的node组一个默认集群出来；这对于单机快速验证是非常有用的；
-但是如果是真实的集群环境，其它节点的地址就需要通过该选项来配置了。同时请注意配在这里的节点都是master-eligible的
-- cluster.initial_master_nodes，选项的名称叫master_node，但其实应该是master-eligible node，就是为了在集群初始话的时候，认可这些备选master的投票，所以理论上来说就是将集群中你所有的master-eligible节点全部记录在此即可，像下面这样：
-    ```csharp
-    cluster.initial_master_nodes: 
-   - master-node-a
-   - master-node-b
-   - master-node-c
-    ```
-- heap size，默认ES分配了1g的内存空间给JVM使用；一些关于JVM内存设置的最佳实践有：
+- `path.data`、`path.logs`，前面已经描述过了
+
+- `cluster.name`，要想组集群，这个选项非常关键，因为只有当节点的cluster.name都一样的时候，它们才会抱团形成集群；另外，单一节点也可以设置该值，至少提供一个有意义的名称也是很有帮助的
+
+- `node.name`，提供一个有意义的名称也是很有帮助的
+
+- `network.host`，默认值是127.0.0.1，运行单一节点的时候这个值很方便；而如果是要组集群，则不能绑定到回环地址上
+    > *一旦你为network.host提供了新值，ES会认为你此时是从debug环境迁移到生产环境，因此会开启更为严格的startup检测，所以有时候设置了该值，可能会导致ES启动不了就是这个原因*
+
+- `http.port`、`transport.port`，当ES的默认网络端口被其他应用抢占了端口时，可以使用这两个配置重新分配新的端口
+
+- `discovery.zen.ping.unicast.hosts`，在默认情况下ES会绑定到回环地址，并检测同一台server上9300-9305这个端口范围试图抱团其它可能存在的node组一个默认集群出来；这对于单机快速验证是非常有用的；但是如果是真实的集群环境，其它节点的地址就需要通过该选项来配置了
+
+- `discovery.zen.minimum_master_nodes`，这个选项是用来防止集群在网络波动的时候出现脑裂的。只有满足最低认可数量的*master-eligible*节点在一起才被允许形成一个集群，也就是大家常说的候选节点法定个数。计算公式为：
+`(master_eligible_nodes / 2) + 1`
+也就是说，如果一堆机器因为网络波动而陷入孤立状态，那么它们之中必须至少有(3 / 2) + 1 = 2法定个数的候选节点存在才允许形成集群
+
+- `heap size`，默认ES分配了1g的内存空间给JVM使用；一些关于JVM内存设置的最佳实践有：
     - 将最小堆大小（`Xms`）和最大堆大小（`Xmx`）设置为一样的值（原因在于如果不一致，很有可能在使用过程中JVM会调整堆大小以满足需求，导致`世界暂停`）
     - Xmx的值不要超过物理内存的一半
     - 打开bootstrap.memory_lock选项（在elasticsearch.yml中）。意图很简单，就是为了防止JVM分配好的内存被操作系统换出到磁盘，影响ES的效率
