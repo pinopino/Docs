@@ -21,8 +21,58 @@ ElasticSearch的安装
         - elasticsearch.yml文件下path.logs -> logs
         - 环境变量ES_PATH_CONF -> config 
     - 纯粹想要速度做快速验证之类的话，推荐用cmd直接运行ES的方式，不建议安装成windows service
+
 ### linux下的安装
-todo。。。
+linux的话一般来说通过直接[下载tar包](https://www.elastic.co/guide/en/elasticsearch/reference/6.7/zip-targz.html)安装更为快捷方便：
+```csharp
+wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-oss-6.7.2.tar.gz
+tar -xzf elasticsearch-6.7.2.tar.gz
+cd elasticsearch-6.7.2/
+```
+tar包下载下来默认情况下是不用进行任何配置的（包括\$ES_HOME、\$ES_CALSSPATH等环境变量），直接运行即可（更底层更基础的类似\$JAVA_HOME这些环境变量可能需要你提前配置好）。途中可能会遇到的问题列举如下：
+- can not run elasticsearch as root
+
+解决办法：
+```csharp
+# 创建用户组
+groupadd es_users
+useradd es_user -g es_users -p 123456
+
+# 为用户赋予文件夹权限
+chown -R es_user:es_users elasticsearch-6.7.2
+```
+随后启动es的过程，我们切换到es_user即可：
+```csharp
+su es_user
+```
+
+- Could not find or load main class JavaVersionChecker
+
+```csharp
+# 调试运行
+[es_user@elastic bin]bash -x ./elasticsearch
+
+# 发现问题是在cp jar包的时候，es_user用户没有权限拷贝root目录下的内容
+
+# 把elasticsearch整个目录移动到/home/es_user下后，再次执行，成功
+cp elasticsearch-6.7.2 /homt/es_user/elasticsearch-6.7.2
+```
+
+- max file descriptors [65535] for elasticsearch process is too low
+- max virtual memory areas vm.max_map_count [65530] is too low
+- max file size [67107840] for user [es_user] is too low, increase to [unlimited]
+
+这三个问题类似，官方文档上也有明确说明，参考[这里](https://www.elastic.co/guide/en/elasticsearch/reference/6.7/setting-system-settings.html)：
+```csharp
+# vi /etc/security/limits.conf
+@es_users - nofile 65535
+@es_users - fsize unlimited
+
+# 对于虚拟内存，我们临时更改以免影响服务器上其它程序
+sudo su  
+ulimit -n 65535 
+su es_user 
+```
 
 ### 安装后的配置
 ES的各种配置分别放置在三个文件中：
@@ -50,11 +100,14 @@ ES的各种配置分别放置在三个文件中：
 
 - `http.port`、`transport.port`，当ES的默认网络端口被其他应用抢占了端口时，可以使用这两个配置重新分配新的端口
 
-- `discovery.zen.ping.unicast.hosts`，在默认情况下ES会绑定到回环地址，并检测同一台server上9300-9305这个端口范围试图抱团其它可能存在的node组一个默认集群出来；这对于单机快速验证是非常有用的；但是如果是真实的集群环境，其它节点的地址就需要通过该选项来配置了
+- `discovery.zen.ping.unicast.hosts`，在默认情况下ES会绑定到回环地址，并检测同一台server上9300-9305这个端口范围试图抱团其它可能存在的node组一个默认集群出来，这对于单机快速验证是非常有用的；但如果是真实的集群环境，其它节点的地址就需要通过该选项来配置了，通常[建议](https://www.elastic.co/guide/en/elasticsearch/reference/6.7/modules-discovery-zen.html)这个list中存储`master-eligible`节点的地址：
+    ```csharp
+    discovery.zen.ping.unicast.hosts: ["192.168.1.100", "192.168.1.101"]
+    ```
 
-- `discovery.zen.minimum_master_nodes`，这个选项是用来防止集群在网络波动的时候出现脑裂的。只有满足最低认可数量的*master-eligible*节点在一起才被允许形成一个集群，也就是大家常说的候选节点法定个数。计算公式为：
+- `discovery.zen.minimum_master_nodes`，这个选项是用来防止集群在网络波动的时候出现脑裂的。只有满足最低认可数量的`master-eligible`节点在一起才被允许形成一个集群，也就是大家常说的候选节点法定个数。计算公式为：
 `(master_eligible_nodes / 2) + 1`
-也就是说，如果一堆机器因为网络波动而陷入孤立状态，那么它们之中必须至少有(3 / 2) + 1 = 2法定个数的候选节点存在才允许形成集群
+也就是说，如果一堆机器因为网络波动而陷入孤立状态，那么它们之中必须至少有(3 / 2) + 1 = 2法定个数的候选节点存在才允许形成集群；关于master-eligible节点更详细的信息可以参考[这里](https://www.elastic.co/guide/en/elasticsearch/reference/6.7/modules-node.html)和[这里](https://www.elastic.co/guide/cn/elasticsearch/guide/current/important-configuration-changes.html)
 
 - `heap size`，默认ES分配了1g的内存空间给JVM使用；一些关于JVM内存设置的最佳实践有：
     - 将最小堆大小（`Xms`）和最大堆大小（`Xmx`）设置为一样的值（原因在于如果不一致，很有可能在使用过程中JVM会调整堆大小以满足需求，导致`世界暂停`）
@@ -135,5 +188,6 @@ https://www.elastic.co/guide/en/elasticsearch/reference/6.7/settings.html
 https://www.jianshu.com/p/4467cfe4e651
 http://www.cnblogs.com/zlslch/p/6440373.html
 https://github.com/NLPchina/elasticsearch-sql
+https://www.cnblogs.com/satuer/p/9636643.html
 
 
