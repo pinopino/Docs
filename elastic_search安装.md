@@ -21,6 +21,10 @@ ElasticSearch的安装
         - elasticsearch.yml文件下path.logs -> logs
         - 环境变量ES_PATH_CONF -> config 
     - 纯粹想要速度做快速验证之类的话，推荐用cmd直接运行ES的方式，不建议安装成windows service
+4. 使用命令行运行es：
+   `.\bin\elasticsearch.exe`，正常情况下控制台会输出：
+   ![](images/elastic_search安装-05.png)
+   也可以在浏览器中直接访问url：http://localhost:9200 查看返回结果进行确定
 
 ### linux下的安装
 linux的话一般来说通过直接[下载tar包](https://www.elastic.co/guide/en/elasticsearch/reference/6.7/zip-targz.html)安装更为快捷方便：
