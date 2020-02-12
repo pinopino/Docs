@@ -185,10 +185,32 @@ sql插件使用的是[elasticsearch-sql](https://github.com/NLPchina/elasticsear
     ![](images/elastic_search安装-04.png)
     千万要小心途中箭头指向的部分，简单来说，如果我们的ES设定了network.host，那么这里的地址一定要使用同样的地址才行。比如，不能因为你在本地，就直接填上一个localhost，那是不行的
 
+### kibana
+这是补充说明的内容，kibana本身是功能非常丰富的绝对值得单开一个文档进行记录，但这里仅在[执行sql语句](https://www.elastic.co/what-is/elasticsearch-sql)的上下文中进行相关补充说明。
+
+首先，kibana的版本就测试的结果来看是严格匹配的，向上向下兼容都不可以。比如这里我们安装的es版本为6.7.1，那么kibana的版本也应该选定为6.7.1；
+
+**关于版本还可以多说两句**：
+现在（2020-02-12）再去访问下载es/kibana的past release列表中已经少了很多版本了，5.x过了直接就是6.8.x然后7.x往上走；不排除6.7.x之流有问题也或者单纯觉得列表太长缩减掉下载次数较少的版本。可以通过强行修改url的方式来获取你想要的版本，我就是通过这样的方式下载到了kibana的6.7.1版本；
+
+另外，下载的时候还会发现es/kibana这些都有一种叫做oss（open source software）的版本，可以通过[这里](https://www.elastic.co/subscriptions)查看到不同版本之间的详细区别。简单来说，oss是比basic更弱的一种版本，考虑到basic也是免费的所以直接建议就不要选择oss版本了。
+
+oss版本也没有携带x-pcak，如果[强行安装](https://www.elastic.co/downloads/x-pack)的话会直接提示oss版本不支持安装x-pack请下载default distribution（basic版本就是一种默认的分发版本）。
+
+最后来看看kibana下面执行sql的操作。有一些必要的前置条件，kibana可以想象成es的前端，其所有数据展示均来自于后端的es存储。因此，es里面需要有index，index上面需要有mapping type，当然type不一定要有文档（我们select * from table也会有数据行为空的情况，这是允许的）。接着执行类似如下的http请求：
+```csharp
+POST _xpack/sql?format=txt
+{
+  "query":"select * from testindex"
+}
+```
+注意到http的方法是`POST`。url上面不用跟host的地址，因为默认kibana会自动寻找本机的9200端口（也就是es的默认端口）。另外能看到`from`后接的是index的名称而不是我们以为的mapping type的名称！
+
 
 
 **参考地址：**
 https://www.elastic.co/guide/en/elasticsearch/reference/6.7/settings.html
+https://discuss.elastic.co/t/is-elasticsearch-sql-going-to-be-in-xpack/141723
 https://www.jianshu.com/p/4467cfe4e651
 http://www.cnblogs.com/zlslch/p/6440373.html
 https://github.com/NLPchina/elasticsearch-sql
