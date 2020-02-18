@@ -189,16 +189,14 @@ PUT /gb/_mapping/tweet
 - `index`，可选值`analyzed`、`not_analyzed`、`no`（不索引，该field不会被搜索到）
 - `analyer`，用来给该字段进行分词
 
-这里的analyer也就是ES中的分析器了，其主要工作就是用来分词并执行标准化（normalize）的。总的来说分析器包含三部分功能：
-- 字符过滤器
-- 分词器
-- token过滤器
+这里的analyer也就是ES中的分析器了，其主要工作就是用来分词并执行标准化（normalize）的。总的来说一串字符串会按顺序依次经过分析器三个模块的处理：
+1. 字符过滤器
+2. 分词器
+3. token过滤器
 
-ES提供了开箱即用的字符过滤器、分词器和token过滤器。这些可以组合起来形成自定义的分析器以用于不同的目的。
+ES提供了开箱即用的字符过滤器、分词器和token过滤器，这些可以组合起来形成[自定义的分析器](https://www.elastic.co/guide/cn/elasticsearch/guide/current/custom-analyzers.html)以用于不同的目的。另外，我们只能搜索在索引中出现的词条，所以索引文本和查询字符串必须标准化为相同的格式（即都过同一种analyer处理）。
 
-另外，我们只能搜索在索引中出现的词条，所以索引文本和查询字符串必须标准化为相同的格式（即都过同一种analyer处理）。
-
-可以使用analyze API来看文本是如何被分析的。在消息体里，指定分析器和要分析的文本：
+可以使用analyze API来查看文本是如何被分析的，我们在消息体里指定分析器和要分析的文本：
 ```csharp
 GET /_analyze
 {
@@ -214,7 +212,7 @@ post http://127.0.0.1:9200/abc2/_analyze/
 }
 ```
 
-汉语和英语的分词规则必然不一样，因此默认的analyzer可能无法很好的与汉语结合工作，因此我们需要指定特定的analyzer。可以在两个层面做这件事：
+汉语和英语的分词规则必然不一样，默认的analyzer可能无法很好的与汉语结合工作，因此我们需要指定特定的analyzer。可以在两个层面做这件事：
 ```csharp
 PUT http://127.0.0.1:9200/test/
 {
@@ -248,7 +246,7 @@ PUT http://127.0.0.1:9200/test/
 }
 ```
 
-  
+
 
 参考链接：
 https://www.elastic.co/guide/cn/elasticsearch/guide/current/index.html
