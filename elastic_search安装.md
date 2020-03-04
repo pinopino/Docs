@@ -138,7 +138,7 @@ ES的各种配置分别放置在三个文件中：
 - 下载elasticsearch-head，`git clone`或者直接下载zip包都可以，随意解压到一个路径，但是保险一些还是建议路径中不要携带中文、空格之类的
 - 修改 \elasticsearch-head-master\Gruntfile.js文件：
   ![](images/elastic_search安装-01.png)
-- 修改elasticsearch-head-master_site\app.js文件：
+- 修改elasticsearch-head-master\\_site\app.js文件：
   ![](images/elastic_search安装-02.png)
   这个地址就是上面提到过的network.host，如果你有改动的话这里最好改成一致的（更方便），虽然本地访问localhost也是没有问题的
 - cmd进入elasticsearch-head解压目录，执行：
@@ -206,6 +206,58 @@ POST _xpack/sql?format=txt
 ```
 注意到http的方法是`POST`。url上面不用跟host的地址，因为默认kibana会自动寻找本机的9200端口（也就是es的默认端口）。另外能看到`from`后接的是index的名称而不是我们以为的mapping type的名称！
 
+### 身份认证
+如果需要开启es的身份认证功能有如下注意事项：
+
+**区分版本**
+es的6.7.x带的licence是basic版本，但是并不支持security功能。必须通过kibana把许可证从basice升级成高级版本（官方提供了一个免费30天使用的trial许可证），升级了之后就能正常使用权限验证的功能了。
+
+**操作步骤**
+es的6.8.x及其之后的版本虽然licence还是basic，但此时已经能够支持security功能了，省去了很多麻烦。以下描述针对6.8.x版本。
+
+首先是打开es的身份认证功能，在文件`elasticsearch.yml`中添加如下配置：
+```csharp
+xpack.security.enabled: true
+```
+
+执行如下请求进行验证：
+```csharp
+http://localhost:9200/_xpack/
+```
+
+此时权限验证功能已经在运行中，所以你会收到如下响应：
+```csharp
+{
+  "error": {
+    "root_cause": [
+      {
+        "type": "security_exception",
+        "reason": "unable to authenticate user [testuser] for REST request [/_xpack/]",
+        "header": {
+          "WWW-Authenticate": "Basic realm=\"security\" charset=\"UTF-8\""
+        }
+      }
+    ]
+    ...
+  },
+  "status": 401
+}
+```
+
+es开启权限验证之后系统内置了几个用户，激活他们并为其设置密码稍后的步骤中会用到。切换到es的安装bin目录，执行：
+```csharp
+./elasticsearch-setup-passwords.bat interactive
+```
+
+分别为这些内置用户设置好密码（别搞忘记了），这一步完成之后，我们就可以用这些内置用户登录kibana来创建自定义用户了。首先启动kibana之前在其配置文件中写入：
+```csharp
+# kibana就是上面提到的内置用户中的一个
+elasticsearch.username: "kibana"
+elasticsearch.password: "123456"
+```
+
+有了这两项设置kibana才能正常启动。接着就是用内置用户登录，登录之后就可以创建自定义用户了。
+
 
 
 **参考地址：**
@@ -215,5 +267,7 @@ https://www.jianshu.com/p/4467cfe4e651
 http://www.cnblogs.com/zlslch/p/6440373.html
 https://github.com/NLPchina/elasticsearch-sql
 https://www.cnblogs.com/satuer/p/9636643.html
+https://www.elastic.co/guide/en/elasticsearch/reference/6.8/secure-cluster.html
+https://www.cnblogs.com/zhuwenjoyce/p/10991024.html
 
 
